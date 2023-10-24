@@ -24,7 +24,7 @@ contract HoneyPotTest is CommonTest {
     uint256 public honeyPotBalance = 1 ether;
 
     function setUp() public {
-        vm.createSelectFork("mainnet", 18419040);
+        vm.createSelectFork("mainnet", 18419040); // Recent block on mainnet
         oevShare = new HoneyPotOEVShare(
             address(chainlink),
             address(chronicle),
@@ -60,7 +60,7 @@ contract HoneyPotTest is CommonTest {
             abi.encodeWithSelector(chainlink.latestRoundData.selector),
             abi.encode(
                 roundId + 1,
-                (answer * 103) / 100,
+                (answer * 103) / 100, // 3% increase
                 startedAt + 1,
                 updatedAt + 1,
                 answeredInRound + 1
