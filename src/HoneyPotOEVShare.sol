@@ -14,14 +14,17 @@ contract HoneyPotOEVShare is
     ChainlinkDestinationAdapter
 {
     constructor(
-        IAggregatorV3Source source,
+        address chainlinkSource,
+        address chronicleSource,
+        address pythSource,
+        bytes32 pythPriceId,
         uint8 decimals
     )
         BoundedUnionSourceAdapter(
-            source,
-            IMedian(address(0)),
-            IPyth(address(0)),
-            bytes32(0),
+            IAggregatorV3Source(chainlinkSource),
+            IMedian(chronicleSource),
+            IPyth(pythSource),
+            pythPriceId,
             0.1e18
         )
         BaseController()
