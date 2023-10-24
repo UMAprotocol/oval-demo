@@ -2,22 +2,22 @@
 pragma solidity 0.8.17;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {HoneyPotOEVShare} from "./HoneyPotOEVShare.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {IAggregatorV3Source} from "oev-contracts/interfaces/chainlink/IAggregatorV3Source.sol";
 
 contract HoneyPot is Ownable {
     struct HoneyPotDetails {
-        uint256 liquidationPrice;
+        int256 liquidationPrice;
         uint256 balance;
     }
 
     mapping(address => HoneyPotDetails) public honeyPots;
-    HoneyPotOEVShare public oracle;
+    IAggregatorV3Source public oracle; // OEV Share serving as a Chainlink oracle
 
-    // Declare events
     event OracleUpdated(address indexed newOracle);
     event HoneyPotCreated(
         address indexed creator,
-        uint256 liquidationPrice,
+        int256 liquidationPrice,
         uint256 initialBalance
     );
     event HoneyPotEmptied(
@@ -27,16 +27,16 @@ contract HoneyPot is Ownable {
     );
     event PotReset(address indexed owner, uint256 amount);
 
-    constructor(HoneyPotOEVShare _oracle) {
+    constructor(IAggregatorV3Source _oracle) {
         oracle = _oracle;
     }
 
-    function setOracle(HoneyPotOEVShare _oracle) external onlyOwner {
+    function setOracle(IAggregatorV3Source _oracle) external onlyOwner {
         oracle = _oracle;
-        emit OracleUpdated(address(_oracle)); // Emit event
+        emit OracleUpdated(address(_oracle));
     }
 
-    function createHoneyPot(uint _liquidationPrice) external payable {
+    function createHoneyPot(int256 _liquidationPrice) external payable {
         require(
             honeyPots[msg.sender].liquidationPrice == 0,
             "Liquidation price already set for this user"
@@ -44,38 +44,38 @@ contract HoneyPot is Ownable {
         require(_liquidationPrice > 0, "Liquidation price cannot be zero");
 
         honeyPots[msg.sender].liquidationPrice = _liquidationPrice;
-        honeyPots[msg.sender].balance = msg.value; // add the sent ether to the user's honey pot balance
+        honeyPots[msg.sender].balance = msg.value;
 
-        emit HoneyPotCreated(msg.sender, _liquidationPrice, msg.value); // Emit event
+        emit HoneyPotCreated(msg.sender, _liquidationPrice, msg.value);
     }
 
     function emptyHoneyPot(address honeyPotCreator) external {
-        int256 currentPrice = oracle.latestAnswer();
+        (, int256 currentPrice, , , ) = oracle.latestRoundData();
         require(currentPrice >= 0, "Invalid price from oracle");
 
         HoneyPotDetails storage userPot = honeyPots[honeyPotCreator];
 
         require(
-            uint256(currentPrice) != userPot.liquidationPrice,
+            currentPrice != userPot.liquidationPrice,
             "Liquidation price reached for this user"
         );
 
         uint256 amount = userPot.balance;
         userPot.balance = 0; // reset the balance
-        userPot.liquidationPrice = 0; // reset the liquidation price. There was a mistake in the original, missing the assignment.
-        payable(msg.sender).transfer(amount);
+        userPot.liquidationPrice = 0; // reset the liquidation price
+        Address.sendValue(payable(msg.sender), amount);
 
-        emit HoneyPotEmptied(honeyPotCreator, msg.sender, amount); // Emit event
+        emit HoneyPotEmptied(honeyPotCreator, msg.sender, amount);
     }
 
-    function resetPot() external onlyOwner {
+    function resetPot() external {
         HoneyPotDetails storage userPot = honeyPots[msg.sender];
 
-        userPot.liquidationPrice = 0;
+        userPot.liquidationPrice = 0; // reset the liquidation price
         uint256 amount = userPot.balance;
         userPot.balance = 0; // reset the balance
-        payable(msg.sender).transfer(amount);
+        Address.sendValue(payable(msg.sender), amount);
 
-        emit PotReset(msg.sender, amount); // Emit event
+        emit PotReset(msg.sender, amount);
     }
 }

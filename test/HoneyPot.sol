@@ -33,7 +33,7 @@ contract HoneyPotTest is CommonTest {
             8
         );
 
-        honeyPot = new HoneyPot(oevShare);
+        honeyPot = new HoneyPot(IAggregatorV3Source(address(oevShare)));
         _whitelistOnChronicle();
         oevShare.setUnlocker(address(this), true);
     }
@@ -72,9 +72,8 @@ contract HoneyPotTest is CommonTest {
         uint256 balanceBefore = address(this).balance;
 
         // Create HoneyPot for the caller
-        honeyPot.createHoneyPot{value: honeyPotBalance}(
-            uint256(oevShare.latestAnswer())
-        );
+        (, int256 latestAnswer, , , ) = oevShare.latestRoundData();
+        honeyPot.createHoneyPot{value: honeyPotBalance}(latestAnswer);
 
         (, uint256 testhoneyPotBalance) = honeyPot.honeyPots(address(this));
         assertTrue(testhoneyPotBalance == honeyPotBalance);
@@ -91,8 +90,9 @@ contract HoneyPotTest is CommonTest {
 
     function testCrackHoneyPot() public {
         // Create HoneyPot for the caller
+        (, int256 latestAnswer, , , ) = oevShare.latestRoundData();
         honeyPot.createHoneyPot{value: honeyPotBalance}(
-            uint256(oevShare.latestAnswer())
+            latestAnswer
         );
         (, uint256 testhoneyPotBalance) = honeyPot.honeyPots(address(this));
         assertTrue(testhoneyPotBalance == honeyPotBalance);
@@ -119,9 +119,8 @@ contract HoneyPotTest is CommonTest {
         );
 
         // Create HoneyPot can be called again
-        honeyPot.createHoneyPot{value: honeyPotBalance}(
-            uint256(oevShare.latestAnswer())
-        );
+        (, int256 latestAnswerNew, , , ) = oevShare.latestRoundData();
+        honeyPot.createHoneyPot{value: honeyPotBalance}(latestAnswerNew);
         (, uint256 testhoneyPotBalanceTwo) = honeyPot.honeyPots(address(this));
         assertTrue(testhoneyPotBalanceTwo == honeyPotBalance);
     }
