@@ -70,27 +70,36 @@ contract HoneyPotTest is CommonTest {
 
     function testHoneyPotCreationAndReset() public {
         uint256 balanceBefore = address(this).balance;
+
+        // Create HoneyPot for the caller
         honeyPot.createHoneyPot{value: honeyPotBalance}(
             uint256(oevShare.latestAnswer())
         );
-        assertTrue(address(honeyPot).balance == honeyPotBalance);
+
+        (, uint256 testhoneyPotBalance) = honeyPot.honeyPots(address(this));
+        assertTrue(testhoneyPotBalance == honeyPotBalance);
         assertTrue(address(this).balance == balanceBefore - honeyPotBalance);
 
+        // Reset HoneyPot for the caller
         honeyPot.resetPot();
-        assertTrue(address(honeyPot).balance == 0);
+        (, uint256 testhoneyPotBalanceReset) = honeyPot.honeyPots(
+            address(this)
+        );
+        assertTrue(testhoneyPotBalanceReset == 0);
         assertTrue(address(this).balance == balanceBefore);
     }
 
     function testCrackHoneyPot() public {
+        // Create HoneyPot for the caller
         honeyPot.createHoneyPot{value: honeyPotBalance}(
             uint256(oevShare.latestAnswer())
         );
-
-        assertTrue(address(honeyPot).balance == honeyPotBalance);
+        (, uint256 testhoneyPotBalance) = honeyPot.honeyPots(address(this));
+        assertTrue(testhoneyPotBalance == honeyPotBalance);
 
         vm.prank(liquidator);
-        vm.expectRevert("Liquidation price reached");
-        honeyPot.emptyHoneyPot();
+        vm.expectRevert("Liquidation price reached for this user");
+        honeyPot.emptyHoneyPot(address(this)); // emptyHoneyPot now requires the creator's address
 
         // Simulate price change
         mockChainlinkPriceChange();
@@ -99,13 +108,21 @@ contract HoneyPotTest is CommonTest {
         oevShare.unlockLatestValue();
 
         uint256 liquidatorBalanceBefore = liquidator.balance;
+
         vm.prank(liquidator);
-        honeyPot.emptyHoneyPot();
+        honeyPot.emptyHoneyPot(address(this)); // emptyHoneyPot now requires the creator's address
 
         uint256 liquidatorBalanceAfter = liquidator.balance;
 
         assertTrue(
             liquidatorBalanceAfter == liquidatorBalanceBefore + honeyPotBalance
         );
+
+        // Create HoneyPot can be called again
+        honeyPot.createHoneyPot{value: honeyPotBalance}(
+            uint256(oevShare.latestAnswer())
+        );
+        (, uint256 testhoneyPotBalanceTwo) = honeyPot.honeyPots(address(this));
+        assertTrue(testhoneyPotBalanceTwo == honeyPotBalance);
     }
 }
