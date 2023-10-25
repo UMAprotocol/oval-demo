@@ -49,6 +49,18 @@ contract HoneyPot is Ownable {
         emit HoneyPotCreated(msg.sender, _liquidationPrice, msg.value);
     }
 
+    function _emptyPotForUser(
+        address honeyPotCreator,
+        address recipient
+    ) internal {
+        HoneyPotDetails storage userPot = honeyPots[honeyPotCreator];
+
+        uint256 amount = userPot.balance;
+        userPot.balance = 0; // reset the balance
+        userPot.liquidationPrice = 0; // reset the liquidation price
+        Address.sendValue(payable(recipient), amount);
+    }
+
     function emptyHoneyPot(address honeyPotCreator) external {
         (, int256 currentPrice, , , ) = oracle.latestRoundData();
         require(currentPrice >= 0, "Invalid price from oracle");
@@ -60,22 +72,12 @@ contract HoneyPot is Ownable {
             "Liquidation price reached for this user"
         );
 
-        uint256 amount = userPot.balance;
-        userPot.balance = 0; // reset the balance
-        userPot.liquidationPrice = 0; // reset the liquidation price
-        Address.sendValue(payable(msg.sender), amount);
-
-        emit HoneyPotEmptied(honeyPotCreator, msg.sender, amount);
+        _emptyPotForUser(honeyPotCreator, msg.sender);
+        emit HoneyPotEmptied(honeyPotCreator, msg.sender, userPot.balance);
     }
 
     function resetPot() external {
-        HoneyPotDetails storage userPot = honeyPots[msg.sender];
-
-        userPot.liquidationPrice = 0; // reset the liquidation price
-        uint256 amount = userPot.balance;
-        userPot.balance = 0; // reset the balance
-        Address.sendValue(payable(msg.sender), amount);
-
-        emit PotReset(msg.sender, amount);
+        _emptyPotForUser(msg.sender, msg.sender);
+        emit PotReset(msg.sender, honeyPots[msg.sender].balance);
     }
 }
