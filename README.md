@@ -1,39 +1,27 @@
-# <h1 align="center"> Forge Template </h1>
 
-**Template repository for getting started quickly with Foundry projects**
+# <h1 align="center"> OEV Share HoneyPot Demo </h1>
 
-![Github Actions](https://github.com/foundry-rs/forge-template/workflows/CI/badge.svg)
+**This repository is a demonstration of the OEV Share system and a HoneyPot mechanism. It showcases how a backrunner can liquidate a position, in this particular case, how a HoneyPot can be emptied given a specific price change.**
+
+![Github Actions](https://github.com/UMAprotocol/oev-demo/workflows/CI/badge.svg)
+
+## Introduction
+
+The HoneyPot mechanism is a unique setup where funds are kept in a contract that is designed to be emptied out based on specific criteria, in this case, a change in the price from an oracle.
 
 ## Getting Started
 
-Click "Use this template" on [GitHub](https://github.com/foundry-rs/forge-template) to create a new repository with this repo as the initial state.
-
-Or, if your repo already exists, run:
-```sh
-forge init
-forge build
-forge test
+To test the demo run the following commands:
+```
+forge install
+export RPC_MAINNET=https://mainnet.infura.io/v3/<YOUR_INFURA_KEY>
+forge test` 
 ```
 
-## Writing your first test
+## Contracts Overview
 
-All you need is to `import forge-std/Test.sol` and then inherit it from your test contract. Forge-std's Test contract comes with a pre-instatiated [cheatcodes environment](https://book.getfoundry.sh/cheatcodes/), the `vm`. It also has support for [ds-test](https://book.getfoundry.sh/reference/ds-test.html)-style logs and assertions. Finally, it supports Hardhat's [console.log](https://github.com/brockelmore/forge-std/blob/master/src/console.sol). The logging functionalities require `-vvvv`.
-
-```solidity
-pragma solidity 0.8.10;
-
-import "forge-std/Test.sol";
-
-contract ContractTest is Test {
-    function testExample() public {
-        vm.roll(100);
-        console.log(1);
-        emit log("hi");
-        assertTrue(true);
-    }
-}
-```
-
-## Development
-
-This project uses [Foundry](https://getfoundry.sh). See the [book](https://book.getfoundry.sh/getting-started/installation.html) for instructions on how to install and use Foundry.
+-   **HoneyPot**: Represents the honey pot, which can be emptied when a price oracle returns a value different from a pre-defined liquidation price. The honey pot's funds can also be reset by its owner.
+    
+-   **HoneyPotOEVShare**: Acts as the oracle which retrieves prices from various sources like Chainlink, Chronicle, and Pyth.
+    
+-   **Test Contract**: Sets up the environment, including simulating price changes and testing the mechanisms for creating and emptying the HoneyPot.
