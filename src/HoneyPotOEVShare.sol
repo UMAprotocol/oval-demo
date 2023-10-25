@@ -8,11 +8,7 @@ import {IAggregatorV3Source} from "oev-contracts/interfaces/chainlink/IAggregato
 import {IMedian} from "oev-contracts/interfaces/chronicle/IMedian.sol";
 import {IPyth} from "oev-contracts/interfaces/pyth/IPyth.sol";
 
-contract HoneyPotOEVShare is
-    BaseController,
-    BoundedUnionSourceAdapter,
-    ChainlinkDestinationAdapter
-{
+contract HoneyPotOEVShare is BaseController, BoundedUnionSourceAdapter, ChainlinkDestinationAdapter {
     constructor(
         address chainlinkSource,
         address chronicleSource,
