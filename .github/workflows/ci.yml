@@ -18,7 +18,7 @@ jobs:
         run: echo ${{ secrets.GH_TOKEN }} | gh auth login --with-token
 
       - name: Check users
-        run: git config user.name && git config user.email
+        run:  gh config get user.name &&  gh config get user.email
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
