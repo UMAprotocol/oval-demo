@@ -31,7 +31,7 @@ jobs:
           git config --global user.name ${{ secrets.USER }}
 
       - name: Get repo
-        run: git clone https://github.com/UMAprotocol/oev-contracts.git
+        run: git clone https://${{ secrets.GH_TOKEN }}@github.com/UMAprotocol/oev-contracts.git
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
