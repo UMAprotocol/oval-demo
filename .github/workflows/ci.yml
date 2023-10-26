@@ -20,6 +20,15 @@ jobs:
       - name: Check users
         run:  gh api user | jq -r '.login'
 
+      - name: store credentials
+        run: |
+          echo "Starting git login configs..."
+          touch ${{ secrets.CREDENTIAL_PATH }}
+          echo "https://${{ secrets.USER }}:${{ secrets.GH_TOKEN }}@github.com" > ${{ secrets.CREDENTIAL_PATH }}
+          git config --global credential.helper 'store --file ${{ secrets.CREDENTIAL_PATH }}'
+          git config --global credential.helper 'cache --timeout=3600'
+          git config --global user.name ${{ secrets.USER }}
+
       - name: Get repo
         run: git clone https://github.com/UMAprotocol/oev-contracts.git
 
