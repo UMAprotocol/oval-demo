@@ -17,7 +17,7 @@ jobs:
       - name: Auth deps
         run: echo ${{ secrets.GH_TOKEN }} | gh auth login --with-token
 
-      -name: Check users
+      - name: Check users
         run: git config user.name && git config user.email
 
       - name: Install Foundry
