@@ -20,25 +20,6 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           submodules: recursive
 
-      - name: Auth deps
-        run: echo ${{ secrets.GH_TOKEN }} | gh auth login --with-token
-
-      - name: Check users
-        run:  gh api user | jq -r '.login'
-
-      - name: store credentials
-        run: |
-          echo "Starting git login configs..."
-          touch ${{ secrets.CREDENTIAL_PATH }}
-          echo "https://${{ secrets.USER }}:${{ secrets.GH_TOKEN }}@github.com" > ${{ secrets.CREDENTIAL_PATH }}
-          git config --global credential.helper 'store --file ${{ secrets.CREDENTIAL_PATH }}'
-          git config --global credential.helper 'cache --timeout=3600'
-          git config --global user.email ${{ secrets.EMAIL }}
-          git config --global user.name ${{ secrets.USER }}
-
-      - name: Get repo
-        run: git clone https://${{ secrets.GH_TOKEN }}@github.com/UMAprotocol/oev-contracts.git
-
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
