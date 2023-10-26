@@ -15,16 +15,8 @@ contract HoneyPot is Ownable {
     IAggregatorV3Source public oracle; // OEV Share serving as a Chainlink oracle
 
     event OracleUpdated(address indexed newOracle);
-    event HoneyPotCreated(
-        address indexed creator,
-        int256 liquidationPrice,
-        uint256 initialBalance
-    );
-    event HoneyPotEmptied(
-        address indexed honeyPotCreator,
-        address indexed trigger,
-        uint256 amount
-    );
+    event HoneyPotCreated(address indexed creator, int256 liquidationPrice, uint256 initialBalance);
+    event HoneyPotEmptied(address indexed honeyPotCreator, address indexed trigger, uint256 amount);
     event PotReset(address indexed owner, uint256 amount);
 
     constructor(IAggregatorV3Source _oracle) {
@@ -36,23 +28,18 @@ contract HoneyPot is Ownable {
         emit OracleUpdated(address(_oracle));
     }
 
-    function createHoneyPot(int256 _liquidationPrice) external payable {
-        require(
-            honeyPots[msg.sender].liquidationPrice == 0,
-            "Liquidation price already set for this user"
-        );
-        require(_liquidationPrice > 0, "Liquidation price cannot be zero");
+    function createHoneyPot() external payable {
+        require(honeyPots[msg.sender].liquidationPrice == 0, "Liquidation price already set for this user");
 
-        honeyPots[msg.sender].liquidationPrice = _liquidationPrice;
+        (, int256 currentPrice,,,) = oracle.latestRoundData();
+
+        honeyPots[msg.sender].liquidationPrice = currentPrice;
         honeyPots[msg.sender].balance = msg.value;
 
-        emit HoneyPotCreated(msg.sender, _liquidationPrice, msg.value);
+        emit HoneyPotCreated(msg.sender, currentPrice, msg.value);
     }
 
-    function _emptyPotForUser(
-        address honeyPotCreator,
-        address recipient
-    ) internal {
+    function _emptyPotForUser(address honeyPotCreator, address recipient) internal {
         HoneyPotDetails storage userPot = honeyPots[honeyPotCreator];
 
         uint256 amount = userPot.balance;
@@ -62,15 +49,12 @@ contract HoneyPot is Ownable {
     }
 
     function emptyHoneyPot(address honeyPotCreator) external {
-        (, int256 currentPrice, , , ) = oracle.latestRoundData();
+        (, int256 currentPrice,,,) = oracle.latestRoundData();
         require(currentPrice >= 0, "Invalid price from oracle");
 
         HoneyPotDetails storage userPot = honeyPots[honeyPotCreator];
 
-        require(
-            currentPrice != userPot.liquidationPrice,
-            "Liquidation price reached for this user"
-        );
+        require(currentPrice != userPot.liquidationPrice, "Liquidation price reached for this user");
 
         _emptyPotForUser(honeyPotCreator, msg.sender);
         emit HoneyPotEmptied(honeyPotCreator, msg.sender, userPot.balance);
