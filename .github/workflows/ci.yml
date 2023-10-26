@@ -18,7 +18,10 @@ jobs:
         run: echo ${{ secrets.GH_TOKEN }} | gh auth login --with-token
 
       - name: Check users
-        run:  gh api user | jq -r '.login' &&  gh api user | jq -r '.email'
+        run:  gh api user | jq -r '.login'
+
+      - name: Get repo
+        run: git clone https://github.com/UMAprotocol/oev-contracts.git
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
