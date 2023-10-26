@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Auth deps
-        run: echo ${{ secrets.GH_TOKEN }} | gh auth login --with-token
+        run: echo ${{ secrets.GH_TOKEN }} | gh auth login --with-token && git config user.name && git config user.email
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
