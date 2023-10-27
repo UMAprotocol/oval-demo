@@ -15,12 +15,12 @@ contract HoneyPotTest is CommonTest {
     event ReceivedEther(address sender, uint256 amount);
     event DrainedEther(address to, uint256 amount);
 
-    IAggregatorV3Source chainlink =
-        IAggregatorV3Source(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
+    IAggregatorV3Source chainlink = IAggregatorV3Source(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
     IMedian chronicle = IMedian(0x64DE91F5A373Cd4c28de3600cB34C7C6cE410C85);
     IPyth pyth = IPyth(0x4305FB66699C3B2702D4d05CF36551390A4c69C6);
-    bytes32 pythPriceId =
-        0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace;
+    bytes32 pythPriceId = 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace;
+
+    ChronicleMedianSourceAdapterMock chronicleMock = new ChronicleMedianSourceAdapterMock();
 
     HoneyPotOEVShare oevShare;
     HoneyPot honeyPot;
@@ -55,13 +55,8 @@ contract HoneyPotTest is CommonTest {
     }
 
     function mockChainlinkPriceChange() public {
-        (
-            uint80 roundId,
-            int256 answer,
-            uint256 startedAt,
-            uint256 updatedAt,
-            uint80 answeredInRound
-        ) = chainlink.latestRoundData();
+        (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) =
+            chainlink.latestRoundData();
         vm.mockCall(
             address(chainlink),
             abi.encodeWithSelector(chainlink.latestRoundData.selector),
@@ -87,9 +82,7 @@ contract HoneyPotTest is CommonTest {
 
         // Reset HoneyPot for the caller
         honeyPot.resetPot();
-        (, uint256 testhoneyPotBalanceReset) = honeyPot.honeyPots(
-            address(this)
-        );
+        (, uint256 testhoneyPotBalanceReset) = honeyPot.honeyPots(address(this));
         assertTrue(testhoneyPotBalanceReset == 0);
         assertTrue(address(this).balance == balanceBefore);
     }
@@ -117,9 +110,7 @@ contract HoneyPotTest is CommonTest {
 
         uint256 liquidatorBalanceAfter = liquidator.balance;
 
-        assertTrue(
-            liquidatorBalanceAfter == liquidatorBalanceBefore + honeyPotBalance
-        );
+        assertTrue(liquidatorBalanceAfter == liquidatorBalanceBefore + honeyPotBalance);
 
         // Create HoneyPot can be called again
         honeyPot.createHoneyPot{value: honeyPotBalance}();
