@@ -14,6 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Checkout modules
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          submodules: recursive
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
