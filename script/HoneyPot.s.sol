@@ -20,14 +20,8 @@ contract HoneyPotDeploymentScript is Script {
     function run() external {
         vm.startBroadcast();
 
-        address chainlink = vm.envOr(
-            "CHAINLINK_SOURCE",
-            0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
-        );
-        address pyth = vm.envOr(
-            "PYTH_SOURCE",
-            0x4305FB66699C3B2702D4d05CF36551390A4c69C6
-        );
+        address chainlink = vm.envOr("CHAINLINK_SOURCE", 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
+        address pyth = vm.envOr("PYTH_SOURCE", 0x4305FB66699C3B2702D4d05CF36551390A4c69C6);
 
         bytes32 defaultId = 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace;
         bytes32 pythPriceId = vm.envOr("PYTH_PRICE_ID", bytes32(0));
