@@ -38,6 +38,7 @@ Then:
  export MNEMONIC="test test test test test test test test test test test junk"
  export DEPLOYER_WALLET=$(cast wallet address --mnemonic "$MNEMONIC")
  export ETH_RPC_URL="http://127.0.0.1:8545"
+ export ETHERSCAN_API_KEY=<YOUR-KEY>
 
  # The following variables can be skipped if you want to use the default values
  export CHAINLINK_SOURCE = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419" // chosen from https://docs.chain.link/docs/reference-contracts
@@ -48,5 +49,6 @@ Then:
           --fork-url $ETH_RPC_URL \
           --mnemonics "$MNEMONIC" \
           --sender $DEPLOYER_WALLET \
+          --verify \
           --broadcast
 ```
