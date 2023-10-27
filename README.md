@@ -25,3 +25,24 @@ forge test`
 -   **HoneyPotOEVShare**: Acts as the oracle which retrieves prices from various sources like Chainlink, Chronicle, and Pyth.
     
 -   **Test Contract**: Sets up the environment, including simulating price changes and testing the mechanisms for creating and emptying the HoneyPot.
+
+## Deploy the Contracts
+
+Can be run against a fork with anvil:
+``` bash
+anvil --fork-url https://mainnet.infura.io/v3/<YOUR_KEY>
+```
+
+Then:
+
+``` bash
+ export MNEMONIC="test test test test test test test test test test test junk"
+ export DEPLOYER_WALLET=$(cast wallet address --mnemonic "$MNEMONIC")
+ export ETH_RPC_URL="http://127.0.0.1:8545"
+ 
+ forge script script/HoneyPot.s.sol \
+          --fork-url $ETH_RPC_URL \
+          --mnemonics "$MNEMONIC" \
+          --sender $DEPLOYER_WALLET \
+          --broadcast
+```
