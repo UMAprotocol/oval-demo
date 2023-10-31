@@ -30,6 +30,7 @@ contract HoneyPot is Ownable {
 
     function createHoneyPot() external payable {
         require(honeyPots[msg.sender].liquidationPrice == 0, "Liquidation price already set for this user");
+        require(msg.value > 0, "No value sent");
 
         (, int256 currentPrice,,,) = oracle.latestRoundData();
 
@@ -55,6 +56,7 @@ contract HoneyPot is Ownable {
         HoneyPotDetails storage userPot = honeyPots[honeyPotCreator];
 
         require(currentPrice != userPot.liquidationPrice, "Liquidation price reached for this user");
+        require(userPot.balance > 0, "No balance to withdraw");
 
         _emptyPotForUser(honeyPotCreator, msg.sender);
         emit HoneyPotEmptied(honeyPotCreator, msg.sender, userPot.balance);
