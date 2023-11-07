@@ -171,4 +171,19 @@ contract HoneyPotTest is CommonTest {
 
         assertTrue(liquidatorBalanceAfter == liquidatorBalanceBefore + honeyPotBalance);
     }
+
+    function testCreateHoneyPotWithNoValue() public {
+        vm.expectRevert("No value sent");
+        honeyPot.createHoneyPot{value: 0}();
+    }
+
+    function testEmptyHoneyPotWithZeroBalance() public {
+        // Assuming honeyPot has been created before
+        // Reset HoneyPot for the caller to ensure balance is 0
+        honeyPot.resetPot();
+
+        vm.prank(liquidator);
+        vm.expectRevert("No balance to withdraw");
+        honeyPot.emptyHoneyPot(address(this));
+    }
 }
