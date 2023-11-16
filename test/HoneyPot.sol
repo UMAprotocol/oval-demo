@@ -14,6 +14,10 @@ import {ChronicleMedianSourceMock} from "../src/mock/ChronicleMedianSourceMock.s
 contract HoneyPotTest is CommonTest {
     event ReceivedEther(address sender, uint256 amount);
     event DrainedEther(address to, uint256 amount);
+    event OracleUpdated(address indexed newOracle);
+    event HoneyPotCreated(address indexed creator, int256 liquidationPrice, uint256 initialBalance);
+    event HoneyPotEmptied(address indexed honeyPotCreator, address indexed trigger, uint256 amount);
+    event PotReset(address indexed owner, uint256 amount);
 
     IAggregatorV3Source chainlink = IAggregatorV3Source(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
     IMedian chronicle = IMedian(0x64DE91F5A373Cd4c28de3600cB34C7C6cE410C85);
@@ -82,6 +86,8 @@ contract HoneyPotTest is CommonTest {
         assertTrue(address(this).balance == balanceBefore - honeyPotBalance);
 
         // Reset HoneyPot for the caller
+        vm.expectEmit(true, true, true, true);
+        emit PotReset(address(this), honeyPotBalance);
         honeyPot.resetPot();
         (, uint256 testhoneyPotBalanceReset) = honeyPot.honeyPots(address(this));
         assertTrue(testhoneyPotBalanceReset == 0);
@@ -90,6 +96,9 @@ contract HoneyPotTest is CommonTest {
 
     function testCrackHoneyPot() public {
         // Create HoneyPot for the caller
+        (, int256 currentPrice,,,) = oevShare.latestRoundData();
+        vm.expectEmit(true, true, true, true);
+        emit HoneyPotCreated(address(this), currentPrice, honeyPotBalance);
         honeyPot.createHoneyPot{value: honeyPotBalance}();
         (, uint256 testhoneyPotBalance) = honeyPot.honeyPots(address(this));
         assertTrue(testhoneyPotBalance == honeyPotBalance);
@@ -107,6 +116,8 @@ contract HoneyPotTest is CommonTest {
         uint256 liquidatorBalanceBefore = liquidator.balance;
 
         vm.prank(liquidator);
+        vm.expectEmit(true, true, true, true);
+        emit HoneyPotEmptied(address(this), liquidator, honeyPotBalance);
         honeyPot.emptyHoneyPot(address(this));
 
         uint256 liquidatorBalanceAfter = liquidator.balance;
@@ -185,5 +196,11 @@ contract HoneyPotTest is CommonTest {
         vm.prank(liquidator);
         vm.expectRevert("No balance to withdraw");
         honeyPot.emptyHoneyPot(address(this));
+    }
+
+    function testSetOracle() public {
+        vm.expectEmit(true, true, true, true);
+        emit OracleUpdated(random);
+        honeyPot.setOracle(IAggregatorV3Source(random));
     }
 }
