@@ -47,8 +47,6 @@ contract HoneyPot is Ownable {
         userPot.balance = 0; // reset the balance
         userPot.liquidationPrice = 0; // reset the liquidation price
         Address.sendValue(payable(recipient), amount);
-
-        return amount;
     }
 
     function emptyHoneyPot(address honeyPotCreator) external {
