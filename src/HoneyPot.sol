@@ -40,10 +40,10 @@ contract HoneyPot is Ownable {
         emit HoneyPotCreated(msg.sender, currentPrice, msg.value);
     }
 
-    function _emptyPotForUser(address honeyPotCreator, address recipient) internal {
+    function _emptyPotForUser(address honeyPotCreator, address recipient) internal returns (uint256 amount) {
         HoneyPotDetails storage userPot = honeyPots[honeyPotCreator];
 
-        uint256 amount = userPot.balance;
+        amount = userPot.balance;
         userPot.balance = 0; // reset the balance
         userPot.liquidationPrice = 0; // reset the liquidation price
         Address.sendValue(payable(recipient), amount);
@@ -58,12 +58,12 @@ contract HoneyPot is Ownable {
         require(currentPrice != userPot.liquidationPrice, "Liquidation price reached for this user");
         require(userPot.balance > 0, "No balance to withdraw");
 
-        _emptyPotForUser(honeyPotCreator, msg.sender);
-        emit HoneyPotEmptied(honeyPotCreator, msg.sender, userPot.balance);
+        uint256 withdrawnAmount = _emptyPotForUser(honeyPotCreator, msg.sender);
+        emit HoneyPotEmptied(honeyPotCreator, msg.sender, withdrawnAmount);
     }
 
     function resetPot() external {
-        _emptyPotForUser(msg.sender, msg.sender);
-        emit PotReset(msg.sender, honeyPots[msg.sender].balance);
+        uint256 withdrawnAmount = _emptyPotForUser(msg.sender, msg.sender);
+        emit PotReset(msg.sender, withdrawnAmount);
     }
 }
