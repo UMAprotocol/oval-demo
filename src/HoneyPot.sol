@@ -53,7 +53,7 @@ contract HoneyPot is Ownable {
         (, int256 currentPrice,,,) = oracle.latestRoundData();
         require(currentPrice >= 0, "Invalid price from oracle");
 
-        HoneyPotDetails memory userPot = honeyPots[honeyPotCreator];
+        HoneyPotDetails storage userPot = honeyPots[honeyPotCreator];
 
         require(currentPrice != userPot.liquidationPrice, "Liquidation price reached for this user");
         require(userPot.balance > 0, "No balance to withdraw");
