@@ -1,8 +1,8 @@
-# <h1 align="center"> OEV Share HoneyPot Demo </h1>
+# <h1 align="center"> OVAL HoneyPot Demo </h1>
 
-**This repository is a demonstration of the OEV Share system and a HoneyPot mechanism. It showcases how a backrunner can liquidate a position, in this particular case, how a HoneyPot can be emptied given a specific price change.**
+**This repository is a demonstration of the OVAL system and a HoneyPot mechanism. It showcases how a backrunner can liquidate a position, in this particular case, how a HoneyPot can be emptied given a specific price change.**
 
-![Github Actions](https://github.com/UMAprotocol/oev-demo/workflows/CI/badge.svg)
+![Github Actions](https://github.com/UMAprotocol/oval-demo/workflows/CI/badge.svg)
 
 ## Introduction
 
@@ -21,7 +21,7 @@ forge test`
 ## Contracts Overview
 
 - **HoneyPot**: Represents the honey pot, which can be emptied when a price oracle returns a value different from a pre-defined liquidation price. The honey pot's funds can also be reset by its owner.
-- **HoneyPotOEVShare**: Acts as the oracle which retrieves prices from various sources like Chainlink, Chronicle, and Pyth.
+- **HoneyPotOVAL**: Acts as the oracle which retrieves prices from various sources like Chainlink, Chronicle, and Pyth.
 - **Test Contract**: Sets up the environment, including simulating price changes and testing the mechanisms for creating and emptying the HoneyPot.
 
 ## Deploy the Contracts

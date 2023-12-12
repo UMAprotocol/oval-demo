@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.17;
 
-import {IMedian} from "oev-contracts/interfaces/chronicle/IMedian.sol";
+import {IMedian} from "oval-contracts/interfaces/chronicle/IMedian.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ChronicleMedianSourceMock is IMedian, Ownable {

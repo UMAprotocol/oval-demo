@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
-import {IAggregatorV3Source} from "oev-contracts/interfaces/chainlink/IAggregatorV3Source.sol";
+import {IAggregatorV3Source} from "oval-contracts/interfaces/chainlink/IAggregatorV3Source.sol";
 
 contract HoneyPot is Ownable {
     struct HoneyPotDetails {
@@ -12,7 +12,7 @@ contract HoneyPot is Ownable {
     }
 
     mapping(address => HoneyPotDetails) public honeyPots;
-    IAggregatorV3Source public oracle; // OEV Share serving as a Chainlink oracle
+    IAggregatorV3Source public oracle; // OVAL serving as a Chainlink oracle
 
     event OracleUpdated(address indexed newOracle);
     event HoneyPotCreated(address indexed creator, int256 liquidationPrice, uint256 initialBalance);

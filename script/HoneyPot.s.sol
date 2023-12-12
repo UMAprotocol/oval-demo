@@ -6,13 +6,13 @@ import "forge-std/Script.sol";
 
 import {ChronicleMedianSourceMock} from "../src/mock/ChronicleMedianSourceMock.sol";
 import {IMedian} from "oev-contracts/interfaces/chronicle/IMedian.sol";
-import {HoneyPotOEVShare} from "../src/HoneyPotOEVShare.sol";
+import {HoneyPotOVAL} from "../src/HoneyPotOVAL.sol";
 import {HoneyPot} from "../src/HoneyPot.sol";
 import {HoneyPotDAO} from "../src/HoneyPotDAO.sol";
-import {IAggregatorV3Source} from "oev-contracts/interfaces/chainlink/IAggregatorV3Source.sol";
+import {IAggregatorV3Source} from "oval-contracts/interfaces/chainlink/IAggregatorV3Source.sol";
 
 contract HoneyPotDeploymentScript is Script {
-    HoneyPotOEVShare oevShare;
+    HoneyPotOVAL oval;
     HoneyPot honeyPot;
     HoneyPotDAO honeyPotDAO;
     ChronicleMedianSourceMock chronicleMock;
@@ -32,7 +32,7 @@ contract HoneyPotDeploymentScript is Script {
         // Create mock ChronicleMedianSource and set the latest source data.
         chronicleMock = new ChronicleMedianSourceMock();
 
-        oevShare = new HoneyPotOEVShare(
+        oval = new HoneyPotOVAL(
             chainlink,
             address(chronicleMock),
             pyth,
@@ -40,7 +40,7 @@ contract HoneyPotDeploymentScript is Script {
             8
         );
 
-        honeyPot = new HoneyPot(IAggregatorV3Source(address(oevShare)));
+        honeyPot = new HoneyPot(IAggregatorV3Source(address(oval)));
 
         honeyPotDAO = new HoneyPotDAO();
 
