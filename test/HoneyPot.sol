@@ -3,8 +3,8 @@ pragma solidity 0.8.17;
 
 import {CommonTest} from "./Common.sol";
 import {IAggregatorV3Source} from "oval-contracts/interfaces/chainlink/IAggregatorV3Source.sol";
-import {IMedian} from "oval-contracts/interfaces/chronicle/IMedian.sol";
-import {IPyth} from "oval-contracts/interfaces/pyth/IPyth.sol";
+import {IMedian} from "oev-contracts/interfaces/chronicle/IMedian.sol";
+import {IPyth} from "oev-contracts/interfaces/pyth/IPyth.sol";
 
 import {HoneyPotOVAL} from "../src/HoneyPotOVAL.sol";
 import {HoneyPot} from "../src/HoneyPot.sol";
