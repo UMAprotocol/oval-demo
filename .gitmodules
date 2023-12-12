@@ -7,3 +7,6 @@
 [submodule "lib/oval-contracts"]
 	path = lib/oval-contracts
 	url = https://github.com/UMAprotocol/oval-contracts
+[submodule "lib/oev-contracts"]
+	path = lib/oev-contracts
+	url = https://github.com/UMAprotocol/oev-contracts
