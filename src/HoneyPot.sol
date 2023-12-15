@@ -12,7 +12,7 @@ contract HoneyPot is Ownable {
     }
 
     mapping(address => HoneyPotDetails) public honeyPots;
-    IAggregatorV3Source public oracle; // OVAL serving as a Chainlink oracle
+    IAggregatorV3Source public oracle; // Oval serving as a Chainlink oracle
 
     event OracleUpdated(address indexed newOracle);
     event HoneyPotCreated(address indexed creator, int256 liquidationPrice, uint256 initialBalance);

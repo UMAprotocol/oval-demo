@@ -6,7 +6,7 @@ import {IAggregatorV3Source} from "oval-contracts/interfaces/chainlink/IAggregat
 import {IMedian} from "oev-contracts/interfaces/chronicle/IMedian.sol";
 import {IPyth} from "oev-contracts/interfaces/pyth/IPyth.sol";
 
-import {HoneyPotOVAL} from "../src/HoneyPotOVAL.sol";
+import {HoneyPotOval} from "../src/HoneyPotOval.sol";
 import {HoneyPot} from "../src/HoneyPot.sol";
 import {HoneyPotDAO} from "../src/HoneyPotDAO.sol";
 import {ChronicleMedianSourceMock} from "../src/mock/ChronicleMedianSourceMock.sol";
@@ -26,7 +26,7 @@ contract HoneyPotTest is CommonTest {
 
     ChronicleMedianSourceMock chronicleMock;
 
-    HoneyPotOVAL oval;
+    HoneyPotOval oval;
     HoneyPot honeyPot;
     HoneyPotDAO honeyPotDAO;
 
@@ -35,7 +35,7 @@ contract HoneyPotTest is CommonTest {
 
     function setUp() public {
         vm.createSelectFork("mainnet", 18419040); // Recent block on mainnet
-        oval = new HoneyPotOVAL(
+        oval = new HoneyPotOval(
             address(chainlink),
             address(chronicle),
             address(pyth),
@@ -145,7 +145,7 @@ contract HoneyPotTest is CommonTest {
         uint256 read = chronicle.read();
         chronicleMock.setLatestSourceData(read, age);
 
-        HoneyPotOVAL oval2 = new HoneyPotOVAL(
+        HoneyPotOval oval2 = new HoneyPotOval(
             address(chainlink),
             address(chronicleMock),
             address(pyth),
