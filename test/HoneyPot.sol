@@ -2,11 +2,11 @@
 pragma solidity 0.8.17;
 
 import {CommonTest} from "./Common.sol";
-import {IAggregatorV3Source} from "oev-contracts/interfaces/chainlink/IAggregatorV3Source.sol";
+import {IAggregatorV3Source} from "oval-contracts/interfaces/chainlink/IAggregatorV3Source.sol";
 import {IMedian} from "oev-contracts/interfaces/chronicle/IMedian.sol";
 import {IPyth} from "oev-contracts/interfaces/pyth/IPyth.sol";
 
-import {HoneyPotOEVShare} from "../src/HoneyPotOEVShare.sol";
+import {HoneyPotOval} from "../src/HoneyPotOval.sol";
 import {HoneyPot} from "../src/HoneyPot.sol";
 import {HoneyPotDAO} from "../src/HoneyPotDAO.sol";
 import {ChronicleMedianSourceMock} from "../src/mock/ChronicleMedianSourceMock.sol";
@@ -26,7 +26,7 @@ contract HoneyPotTest is CommonTest {
 
     ChronicleMedianSourceMock chronicleMock;
 
-    HoneyPotOEVShare oevShare;
+    HoneyPotOval oval;
     HoneyPot honeyPot;
     HoneyPotDAO honeyPotDAO;
 
@@ -35,7 +35,7 @@ contract HoneyPotTest is CommonTest {
 
     function setUp() public {
         vm.createSelectFork("mainnet", 18419040); // Recent block on mainnet
-        oevShare = new HoneyPotOEVShare(
+        oval = new HoneyPotOval(
             address(chainlink),
             address(chronicle),
             address(pyth),
@@ -43,10 +43,10 @@ contract HoneyPotTest is CommonTest {
             8
         );
 
-        honeyPot = new HoneyPot(IAggregatorV3Source(address(oevShare)));
+        honeyPot = new HoneyPot(IAggregatorV3Source(address(oval)));
         honeyPotDAO = new HoneyPotDAO();
         _whitelistOnChronicle();
-        oevShare.setUnlocker(address(this), true);
+        oval.setUnlocker(address(this), true);
         chronicleMock = new ChronicleMedianSourceMock();
     }
 
@@ -54,7 +54,7 @@ contract HoneyPotTest is CommonTest {
 
     function _whitelistOnChronicle() internal {
         vm.startPrank(0xBE8E3e3618f7474F8cB1d074A26afFef007E98FB); // DSPause that is a ward (can add kiss to chronicle)
-        chronicle.kiss(address(oevShare));
+        chronicle.kiss(address(oval));
         chronicle.kiss(address(this)); // So that we can read Chronicle directly.
         vm.stopPrank();
     }
@@ -96,7 +96,7 @@ contract HoneyPotTest is CommonTest {
 
     function testCrackHoneyPot() public {
         // Create HoneyPot for the caller
-        (, int256 currentPrice,,,) = oevShare.latestRoundData();
+        (, int256 currentPrice,,,) = oval.latestRoundData();
         vm.expectEmit(true, true, true, true);
         emit HoneyPotCreated(address(this), currentPrice, honeyPotBalance);
         honeyPot.createHoneyPot{value: honeyPotBalance}();
@@ -111,7 +111,7 @@ contract HoneyPotTest is CommonTest {
         mockChainlinkPriceChange();
 
         // Unlock the latest value
-        oevShare.unlockLatestValue();
+        oval.unlockLatestValue();
 
         uint256 liquidatorBalanceBefore = liquidator.balance;
 
@@ -145,17 +145,17 @@ contract HoneyPotTest is CommonTest {
         uint256 read = chronicle.read();
         chronicleMock.setLatestSourceData(read, age);
 
-        HoneyPotOEVShare oevShare2 = new HoneyPotOEVShare(
+        HoneyPotOval oval2 = new HoneyPotOval(
             address(chainlink),
             address(chronicleMock),
             address(pyth),
             pythPriceId,
             8
         );
-        oevShare2.setUnlocker(address(this), true);
+        oval2.setUnlocker(address(this), true);
 
         HoneyPot honeyPot2 = new HoneyPot(
-            IAggregatorV3Source(address(oevShare2))
+            IAggregatorV3Source(address(oval2))
         );
 
         // Create HoneyPot for the caller
@@ -171,7 +171,7 @@ contract HoneyPotTest is CommonTest {
         chronicleMock.setLatestSourceData((read * 103) / 100, uint32(block.timestamp - 1));
 
         // Unlock the latest value
-        oevShare2.unlockLatestValue();
+        oval2.unlockLatestValue();
 
         uint256 liquidatorBalanceBefore = liquidator.balance;
 
