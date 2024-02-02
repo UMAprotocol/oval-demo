@@ -4,45 +4,39 @@ pragma solidity ^0.8.0;
 import "forge-std/console2.sol";
 import "forge-std/Script.sol";
 
-import {ChronicleMedianSourceMock} from "../src/mock/ChronicleMedianSourceMock.sol";
-import {IMedian} from "oev-contracts/interfaces/chronicle/IMedian.sol";
-import {HoneyPotOval} from "../src/HoneyPotOval.sol";
 import {HoneyPot} from "../src/HoneyPot.sol";
 import {HoneyPotDAO} from "../src/HoneyPotDAO.sol";
-import {IAggregatorV3Source} from "oval-contracts/interfaces/chainlink/IAggregatorV3Source.sol";
+import {ChainlinkOvalImmutable, IAggregatorV3Source} from "oval-quickstart/ChainlinkOvalImmutable.sol";
 
 contract HoneyPotDeploymentScript is Script {
-    HoneyPotOval oval;
-    HoneyPot honeyPot;
-    HoneyPotDAO honeyPotDAO;
-    ChronicleMedianSourceMock chronicleMock;
-
     function run() external {
-        vm.startBroadcast();
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address chainlink = vm.envAddress("SOURCE_ADDRESS");
+        uint256 lockWindow = vm.envUint("LOCK_WINDOW");
+        uint256 maxTraversal = vm.envUint("MAX_TRAVERSAL");
 
-        address chainlink = vm.envOr("CHAINLINK_SOURCE", 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
-        address pyth = vm.envOr("PYTH_SOURCE", 0x4305FB66699C3B2702D4d05CF36551390A4c69C6);
+        // This script assumes exactly one unlocker is set. If you want to set more than one, you'll need to modify this
+        // script to have an array of known unlocker addresses.
+        string memory unlockersString = vm.envString("UNLOCKERS");
+        address[] memory unlockers = new address[](1);
+        unlockers[0] = address(uint160(uint256(keccak256(abi.encodePacked(unlockersString)))));
 
-        bytes32 defaultId = 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace;
-        bytes32 pythPriceId = vm.envOr("PYTH_PRICE_ID", bytes32(0));
-        if (pythPriceId == bytes32(0)) {
-            pythPriceId = defaultId;
-        }
+        IAggregatorV3Source source = IAggregatorV3Source(chainlink);
+        uint8 decimals = IAggregatorV3Source(chainlink).decimals();
+        vm.startBroadcast(deployerPrivateKey);
 
-        // Create mock ChronicleMedianSource and set the latest source data.
-        chronicleMock = new ChronicleMedianSourceMock();
+        ChainlinkOvalImmutable oracle =
+            new ChainlinkOvalImmutable(source, decimals, lockWindow, maxTraversal, unlockers);
 
-        oval = new HoneyPotOval(
-            chainlink,
-            address(chronicleMock),
-            pyth,
-            pythPriceId,
-            8
-        );
+        console.log("Deployed ChainlinkOvalImmutable contract at address: ", address(oracle));
 
-        honeyPot = new HoneyPot(IAggregatorV3Source(address(oval)));
+        HoneyPot honeyPot = new HoneyPot(IAggregatorV3Source(address(oracle)));
 
-        honeyPotDAO = new HoneyPotDAO();
+        console.log("Deployed HoneyPot contract at address: ", address(honeyPot));
+
+        HoneyPotDAO honeyPotDAO = new HoneyPotDAO();
+
+        console.log("Deployed HoneyPotDAO contract at address: ", address(honeyPotDAO));
 
         vm.stopBroadcast();
     }
