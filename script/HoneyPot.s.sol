@@ -14,12 +14,15 @@ contract HoneyPotDeploymentScript is Script {
         address chainlink = vm.envAddress("SOURCE_ADDRESS");
         uint256 lockWindow = vm.envUint("LOCK_WINDOW");
         uint256 maxTraversal = vm.envUint("MAX_TRAVERSAL");
-
-        // This script assumes exactly one unlocker is set. If you want to set more than one, you'll need to modify this
-        // script to have an array of known unlocker addresses.
-        string memory unlockersString = vm.envString("UNLOCKERS");
+        address unlocker = vm.envAddress("UNLOCKERS");
         address[] memory unlockers = new address[](1);
-        unlockers[0] = address(uint160(uint256(keccak256(abi.encodePacked(unlockersString)))));
+        unlockers[0] = unlocker;
+
+        console.log("Deploying HoneyPot with the following parameters:");
+        console.log("  - Chainlink source address: ", chainlink);
+        console.log("  - Lock window: ", lockWindow);
+        console.log("  - Max traversal: ", maxTraversal);
+        console.log("  - Unlocker: ", unlockers[0]);
 
         IAggregatorV3Source source = IAggregatorV3Source(chainlink);
         uint8 decimals = IAggregatorV3Source(chainlink).decimals();

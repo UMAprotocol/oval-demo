@@ -2,11 +2,9 @@
 
 **This repository is a demonstration of the Oval system and a HoneyPot mechanism. It showcases how a backrunner can liquidate a position, in this particular case, how a HoneyPot can be emptied given a specific price change.**
 
-![Github Actions](https://github.com/UMAprotocol/oval-demo/workflows/CI/badge.svg)
-
 ## Introduction
 
-The HoneyPot mechanism is a unique setup where funds are kept in a contract that is designed to be emptied out based on specific criteria, in this case, a change in the price from an oracle.
+The HoneyPot is a contract abstracting in a simple way a money market or any other contract that can be liquidated. The HoneyPot is initialized with a specific amount of funds and the Chainlink price at the creation of the pot. The HoneyPot can be subject to liquidation (emptyHoneyPot function) if the Chainlink price feed reports a value different from the initial price at the time of the HoneyPot's creation. The owner of the HoneyPot can reset the funds and the price at any time. It can support one honey per address calling the [`createHoneyPot`](https://github.com/UMAprotocol/oev-demo/blob/master/src/HoneyPot.sol#L31) function.
 
 ## Getting Started
 
@@ -20,33 +18,27 @@ forge test`
 
 ## Contracts Overview
 
-- **HoneyPot**: Represents the honey pot, which can be emptied when a price oracle returns a value different from a pre-defined liquidation price. The honey pot's funds can also be reset by its owner.
-- **HoneyPotOval**: Acts as the oracle which retrieves prices from various sources like Chainlink, Chronicle, and Pyth.
-- **Test Contract**: Sets up the environment, including simulating price changes and testing the mechanisms for creating and emptying the HoneyPot.
+- **HoneyPot**: This represents the honey pot, which can be emptied when the Chainlink price feed reports a value different from the initial price at the time of the honey pot's creation. The funds in the honey pot can also be reset by its owner.
+- **ChainlinkOvalImmutable**: Serves as the oracle that retrieves prices from Chainlink. This is the simplest version of Oval that can be used to retrieve prices from Chainlink. It's pulled from the [Oval-Quickstart](https://github.com/UMAprotocol/oval-quickstart) repository.
+- **ChainlinkOvalImmutable**: This is a simple example of a contract that can receive the Oval MEV-Share refunds for Oracle auction kickback.
 
 ## Deploy the Contracts
 
-Can be run against a fork with anvil:
+(Optional) Can be run against a fork with anvil by first running:
 
 ```bash
 anvil --fork-url https://mainnet.infura.io/v3/<YOUR_KEY>
 ```
 
-Then:
+Run the following command to deploy the contracts:
 
 ```bash
- export MNEMONIC="test test test test test test test test test test test junk"
- export DEPLOYER_WALLET=$(cast wallet address --mnemonic "$MNEMONIC")
- export ETH_RPC_URL="http://127.0.0.1:8545"
+ export PRIVATE_KEY=0xPUT_YOUR_PRIVATE_KEY_HERE # This account will do the deployment
+ export SOURCE_ADDRESS=0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419 # example Chainlink ETH/USD
+ export LOCK_WINDOW=60 # How long each update is blocked for OEV auction to run.
+ export MAX_TRAVERSAL=4 # How many iterations to look back for historic data.
+ export UNLOCKER=0xPUT_YOUR_UNLOCKER_ADDRESS_HERE # Your address provided on Discord.
+ export ETH_RPC_URL=PUT_YOUR_RPC_URL_HERE # Your network or fork RPC Url.
 
- # The following variables can be skipped if you want to use the default values
- export CHAINLINK_SOURCE = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419" // chosen from https://docs.chain.link/docs/reference-contracts
- export PYTH_SOURCE = "0x4305FB66699C3B2702D4d05CF36551390A4c69C6" // chosen from https://pyth.network/markets
- export PYTH_PRICE_ID = "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace" // chosen from https://pyth.network/markets
-
- forge script script/HoneyPot.s.sol \
-          --fork-url $ETH_RPC_URL \
-          --mnemonics "$MNEMONIC" \
-          --sender $DEPLOYER_WALLET \
-          --broadcast
+ forge script script/HoneyPot.s.sol --rpc-url $ETH_RPC_URL --broadcast
 ```
