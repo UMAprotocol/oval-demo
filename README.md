@@ -4,7 +4,7 @@
 
 ## Introduction
 
-The HoneyPot is a contract abstracting in a simple way a money market or any other contract that can be liquidated. The HoneyPot is initialized with a specific amount of funds and the Chainlink price at the creation of the pot. The HoneyPot can be subject to liquidation (emptyHoneyPot function) if the Chainlink price feed reports a value different from the initial price at the time of the HoneyPot's creation. The owner of the HoneyPot can reset the funds and the price at any time. It can support one honey per address calling the [`createHoneyPot`](https://github.com/UMAprotocol/oev-demo/blob/master/src/HoneyPot.sol#L31) function.
+The HoneyPot is a contract abstracting in a simple way a money market or any other contract that can be liquidated. The HoneyPot is initialized with a specific amount of funds and the Chainlink price at the creation of the pot. The HoneyPot can be subject to liquidation (`emptyHoneyPot` function) if the Chainlink price feed reports a value different from the initial price at the time of the HoneyPot's creation. The owner of the HoneyPot can reset the funds and the price at any time. It can support one honey per address by calling the [`createHoneyPot`](https://github.com/UMAprotocol/oev-demo/blob/master/src/HoneyPot.sol#L31) function.
 
 ## Getting Started
 
