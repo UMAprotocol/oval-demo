@@ -14,7 +14,7 @@ contract HoneyPotDeploymentScript is Script {
         address chainlink = vm.envAddress("SOURCE_ADDRESS");
         uint256 lockWindow = vm.envUint("LOCK_WINDOW");
         uint256 maxTraversal = vm.envUint("MAX_TRAVERSAL");
-        address unlocker = vm.envAddress("UNLOCKERS");
+        address unlocker = vm.envAddress("UNLOCKER");
         address[] memory unlockers = new address[](1);
         unlockers[0] = unlocker;
 
