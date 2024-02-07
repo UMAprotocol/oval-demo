@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
-import {IAggregatorV3Source} from "oval-contracts/interfaces/chainlink/IAggregatorV3Source.sol";
+import {IAggregatorV3Source} from "oval-quickstart/ChainlinkOvalImmutable.sol";
 
 contract HoneyPot is Ownable {
     struct HoneyPotDetails {
