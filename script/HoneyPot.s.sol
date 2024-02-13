@@ -8,10 +8,12 @@ import {HoneyPot} from "../src/HoneyPot.sol";
 import {HoneyPotDAO} from "../src/HoneyPotDAO.sol";
 import {ChainlinkOvalImmutable, IAggregatorV3Source} from "oval-quickstart/ChainlinkOvalImmutable.sol";
 
+import {MockV3Aggregator} from "../src/mock/MockV3Aggregator.sol";
+
 contract HoneyPotDeploymentScript is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        address chainlink = vm.envAddress("SOURCE_ADDRESS");
+        address chainlink = vm.envOr("SOURCE_ADDRESS", address(0));
         uint256 lockWindow = vm.envUint("LOCK_WINDOW");
         uint256 maxTraversal = vm.envUint("MAX_TRAVERSAL");
         address unlocker = vm.envAddress("UNLOCKER");
@@ -24,9 +26,18 @@ contract HoneyPotDeploymentScript is Script {
         console.log("  - Max traversal: ", maxTraversal);
         console.log("  - Unlocker: ", unlockers[0]);
 
+        vm.startBroadcast(deployerPrivateKey);
+
+        if(chainlink == address(0)) {
+            console.log("Chainlink source address is not set");
+            console.log("Deploying a mock Chainlink source");
+            MockV3Aggregator mock = new MockV3Aggregator(8, 100000000000);
+            chainlink = address(mock);
+            console.log("Deployed mock Chainlink source at address: ", chainlink);
+        }
+
         IAggregatorV3Source source = IAggregatorV3Source(chainlink);
         uint8 decimals = IAggregatorV3Source(chainlink).decimals();
-        vm.startBroadcast(deployerPrivateKey);
 
         ChainlinkOvalImmutable oracle =
             new ChainlinkOvalImmutable(source, decimals, lockWindow, maxTraversal, unlockers);

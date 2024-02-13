@@ -15,9 +15,9 @@ contract HoneyPot is Ownable {
     IAggregatorV3Source public oracle; // Oval serving as a Chainlink oracle
 
     event OracleUpdated(address indexed newOracle);
-    event HoneyPotCreated(address indexed creator, int256 liquidationPrice, uint256 initialBalance);
-    event HoneyPotEmptied(address indexed honeyPotCreator, address indexed trigger, uint256 amount);
-    event PotReset(address indexed owner, uint256 amount);
+    event HoneyPotCreated(address indexed owner, int256 initialPrice, uint256 amount);
+    event HoneyPotEmptied(address indexed owner, address indexed liquidator, uint256 amount);
+    event HoneyPotReset(address indexed owner, uint256 amount);
 
     constructor(IAggregatorV3Source _oracle) {
         oracle = _oracle;
@@ -40,8 +40,8 @@ contract HoneyPot is Ownable {
         emit HoneyPotCreated(msg.sender, currentPrice, msg.value);
     }
 
-    function _emptyPotForUser(address honeyPotCreator, address recipient) internal returns (uint256 amount) {
-        HoneyPotDetails storage userPot = honeyPots[honeyPotCreator];
+    function _emptyPotForUser(address owner, address recipient) internal returns (uint256 amount) {
+        HoneyPotDetails storage userPot = honeyPots[owner];
 
         amount = userPot.balance;
         userPot.balance = 0; // reset the balance
@@ -49,21 +49,21 @@ contract HoneyPot is Ownable {
         Address.sendValue(payable(recipient), amount);
     }
 
-    function emptyHoneyPot(address honeyPotCreator) external {
+    function emptyHoneyPot(address owner) external {
         (, int256 currentPrice,,,) = oracle.latestRoundData();
         require(currentPrice >= 0, "Invalid price from oracle");
 
-        HoneyPotDetails storage userPot = honeyPots[honeyPotCreator];
+        HoneyPotDetails storage userPot = honeyPots[owner];
 
         require(currentPrice != userPot.liquidationPrice, "Liquidation price reached for this user");
         require(userPot.balance > 0, "No balance to withdraw");
 
-        uint256 withdrawnAmount = _emptyPotForUser(honeyPotCreator, msg.sender);
-        emit HoneyPotEmptied(honeyPotCreator, msg.sender, withdrawnAmount);
+        uint256 withdrawnAmount = _emptyPotForUser(owner, msg.sender);
+        emit HoneyPotEmptied(owner, msg.sender, withdrawnAmount);
     }
 
     function resetPot() external {
         uint256 withdrawnAmount = _emptyPotForUser(msg.sender, msg.sender);
-        emit PotReset(msg.sender, withdrawnAmount);
+        emit HoneyPotReset(msg.sender, withdrawnAmount);
     }
 }

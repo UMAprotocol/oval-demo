@@ -10,9 +10,9 @@ contract HoneyPotTest is CommonTest {
     event ReceivedEther(address sender, uint256 amount);
     event DrainedEther(address to, uint256 amount);
     event OracleUpdated(address indexed newOracle);
-    event HoneyPotCreated(address indexed creator, int256 liquidationPrice, uint256 initialBalance);
-    event HoneyPotEmptied(address indexed honeyPotCreator, address indexed trigger, uint256 amount);
-    event PotReset(address indexed owner, uint256 amount);
+    event HoneyPotCreated(address indexed owner, int256 initialPrice, uint256 initialBalance);
+    event HoneyPotEmptied(address indexed owner, address indexed liquidator, uint256 amount);
+    event HoneyPotReset(address indexed owner, uint256 amount);
 
     IAggregatorV3Source chainlink = IAggregatorV3Source(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
     ChainlinkOvalImmutable oracle;
@@ -63,7 +63,7 @@ contract HoneyPotTest is CommonTest {
 
         // Reset HoneyPot for the caller
         vm.expectEmit(true, true, true, true);
-        emit PotReset(address(this), honeyPotBalance);
+        emit HoneyPotReset(address(this), honeyPotBalance);
         honeyPot.resetPot();
         (, uint256 testhoneyPotBalanceReset) = honeyPot.honeyPots(address(this));
         assertTrue(testhoneyPotBalanceReset == 0);
