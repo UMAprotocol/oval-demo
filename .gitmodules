@@ -7,3 +7,6 @@
 [submodule "lib/oval-quickstart"]
 	path = lib/oval-quickstart
 	url = https://github.com/UMAprotocol/oval-quickstart
+[submodule "lib/oval-contracts"]
+	path = lib/oval-contracts
+	url = https://github.com/UMAprotocol/oval-contracts

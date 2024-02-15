@@ -6,13 +6,15 @@ import {HoneyPot} from "../src/HoneyPot.sol";
 import {HoneyPotDAO} from "../src/HoneyPotDAO.sol";
 import {ChainlinkOvalImmutable, IAggregatorV3Source} from "oval-quickstart/ChainlinkOvalImmutable.sol";
 
+import {MockV3Aggregator} from "../src/mock/MockV3Aggregator.sol";
+
 contract HoneyPotTest is CommonTest {
     event ReceivedEther(address sender, uint256 amount);
     event DrainedEther(address to, uint256 amount);
     event OracleUpdated(address indexed newOracle);
-    event HoneyPotCreated(address indexed creator, int256 liquidationPrice, uint256 initialBalance);
-    event HoneyPotEmptied(address indexed honeyPotCreator, address indexed trigger, uint256 amount);
-    event PotReset(address indexed owner, uint256 amount);
+    event HoneyPotCreated(address indexed owner, int256 initialPrice, uint256 initialBalance);
+    event HoneyPotEmptied(address indexed owner, address indexed liquidator, uint256 amount);
+    event HoneyPotReset(address indexed owner, uint256 amount);
 
     IAggregatorV3Source chainlink = IAggregatorV3Source(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
     ChainlinkOvalImmutable oracle;
@@ -63,7 +65,7 @@ contract HoneyPotTest is CommonTest {
 
         // Reset HoneyPot for the caller
         vm.expectEmit(true, true, true, true);
-        emit PotReset(address(this), honeyPotBalance);
+        emit HoneyPotReset(address(this), honeyPotBalance);
         honeyPot.resetPot();
         (, uint256 testhoneyPotBalanceReset) = honeyPot.honeyPots(address(this));
         assertTrue(testhoneyPotBalanceReset == 0);
@@ -104,6 +106,42 @@ contract HoneyPotTest is CommonTest {
         honeyPot.createHoneyPot{value: honeyPotBalance}();
         (, uint256 testhoneyPotBalanceTwo) = honeyPot.honeyPots(address(this));
         assertTrue(testhoneyPotBalanceTwo == honeyPotBalance);
+    }
+
+    function testCrackHoneyPotWithMockOracle() public {
+        // Setup mock oracle
+        MockV3Aggregator mock = new MockV3Aggregator(8, 100000000000);
+        address[] memory unlockers = new address[](1);
+        unlockers[0] = address(this);
+        oracle = new ChainlinkOvalImmutable(IAggregatorV3Source(address(mock)), 8, 3, 10, unlockers);
+        honeyPot = new HoneyPot(IAggregatorV3Source(address(oracle)));
+
+        // Create HoneyPot for the caller
+        (, int256 currentPrice,,,) = oracle.latestRoundData();
+        vm.expectEmit(true, true, true, true);
+        emit HoneyPotCreated(address(this), currentPrice, honeyPotBalance);
+        honeyPot.createHoneyPot{value: honeyPotBalance}();
+        (, uint256 testhoneyPotBalance) = honeyPot.honeyPots(address(this));
+        assertTrue(testhoneyPotBalance == honeyPotBalance);
+
+        // Simulate price change
+        int256 newAnswer = (currentPrice * 103) / 100;
+        bytes32[] memory empty = new bytes32[](0);
+        mock.transmit(abi.encode(newAnswer), empty, empty, bytes32(0));
+
+        // Unlock the latest value
+        oracle.unlockLatestValue();
+
+        uint256 liquidatorBalanceBefore = liquidator.balance;
+
+        vm.prank(liquidator);
+        vm.expectEmit(true, true, true, true);
+        emit HoneyPotEmptied(address(this), liquidator, honeyPotBalance);
+        honeyPot.emptyHoneyPot(address(this));
+
+        uint256 liquidatorBalanceAfter = liquidator.balance;
+
+        assertTrue(liquidatorBalanceAfter == liquidatorBalanceBefore + honeyPotBalance);
     }
 
     function testHoneyPotDAO() public {
