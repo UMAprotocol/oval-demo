@@ -13,7 +13,7 @@ To test the demo run the following commands:
 ```
 forge install
 export RPC_MAINNET=https://mainnet.infura.io/v3/<YOUR_INFURA_KEY>
-forge test`
+forge test
 ```
 
 ## Contracts Overview
